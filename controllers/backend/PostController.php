@@ -37,7 +37,6 @@ class PostController extends BackendController
                 'actions' => [
                     'delete' => ['post', 'delete'],
                     'bulk-delete' => ['post', 'delete'],
-                    'delete-file' => ['post', 'delete'],
                     'publish' => ['post'],
                     'unpublish' => ['post'],
                     'ordering' => ['post'],
@@ -48,7 +47,7 @@ class PostController extends BackendController
                 'rules' => [
                     [
                         'allow' => true,
-                        'actions' => ['update', 'delete', 'delete-file', 'publish', 'unpublish', 'index', 'view', 'select'],
+                        'actions' => ['update', 'delete', 'publish', 'unpublish', 'index', 'view', 'select'],
                         'roles' => ['readPost'],
                     ],
                     [
@@ -263,29 +262,6 @@ class PostController extends BackendController
         }
 
         return $this->redirect(ArrayHelper::getValue(Yii::$app->request, 'referrer', ['index']));
-    }
-
-    /**
-     * @param integer $pk
-     * @param $attribute
-     * @throws ForbiddenHttpException
-     * @throws NotFoundHttpException
-     */
-    public function actionDeleteFile($pk, $attribute)
-    {
-        $model = $this->findModel($pk);
-
-        if (!Yii::$app->user->can('deletePost', ['post' => $model])) {
-            throw new ForbiddenHttpException(Yii::t('yii', 'You are not allowed to perform this action.'));
-        }
-
-        if (Yii::$app->request->getIsAjax()) {
-            $model->deleteFile($attribute, true);
-            echo Json::encode([]);
-        } else {
-            $model->deleteFile($attribute);
-            $this->redirect(['update', 'id' => $pk]);
-        }
     }
 
     /**

@@ -13,17 +13,17 @@ namespace gromver\platform\news\models;
 use gromver\platform\core\behaviors\NestedSetsBehavior;
 use gromver\platform\core\behaviors\SearchBehavior;
 use gromver\platform\core\behaviors\TaggableBehavior;
-use gromver\platform\core\behaviors\upload\ThumbnailProcessor;
-use gromver\platform\core\behaviors\UploadBehavior;
 use gromver\platform\core\behaviors\VersionBehavior;
 use gromver\platform\core\interfaces\model\SearchableInterface;
 use gromver\platform\core\interfaces\model\ViewableInterface;
 use gromver\platform\core\modules\user\models\User;
 use Yii;
+use yii\base\Exception;
 use yii\behaviors\BlameableBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
+use yii\web\UploadedFile;
 
 /**
  * This is the model class for table "news_category".
@@ -64,6 +64,11 @@ class Category extends \yii\db\ActiveRecord implements ViewableInterface, Search
 {
     const STATUS_PUBLISHED = 1;
     const STATUS_UNPUBLISHED = 2;
+
+    public $previewImage;           // для загрузки нового превью изображения
+    public $previewImageUploaded;   // для удаления уже загруженного превью изображения
+    public $detailImage;            // для загрузки нового детального изображения
+    public $detailImageUploaded;    // для удаления уже загруженного детального изображения
 
     /**
      * @inheritdoc
@@ -112,7 +117,8 @@ class Category extends \yii\db\ActiveRecord implements ViewableInterface, Search
             [['alias'], 'required', 'enableClientValidation' => false],
 
             [['title', 'detail_text', 'status'], 'required'],
-            [['tags', 'versionNote'], 'safe'],
+            [['previewImage', 'detailImage'], 'file', 'extensions' => 'png, jpg'],
+            [['tags', 'versionNote', 'previewImageUploaded', 'detailImageUploaded'], 'safe'],
             [['ordering'], 'filter', 'filter' => 'intVal'], //for proper $changedAttributes
         ];
     }
@@ -130,8 +136,10 @@ class Category extends \yii\db\ActiveRecord implements ViewableInterface, Search
             'path' => Yii::t('gromver.platform', 'Path'),
             'preview_text' => Yii::t('gromver.platform', 'Preview Text'),
             'preview_image' => Yii::t('gromver.platform', 'Preview Image'),
+            'previewImage' => Yii::t('gromver.platform', 'Preview Image'),
             'detail_text' => Yii::t('gromver.platform', 'Detail Text'),
             'detail_image' => Yii::t('gromver.platform', 'Detail Image'),
+            'detailImage' => Yii::t('gromver.platform', 'Detail Image'),
             'metakey' => Yii::t('gromver.platform', 'Meta keywords'),
             'metadesc' => Yii::t('gromver.platform', 'Meta description'),
             'created_at' => Yii::t('gromver.platform', 'Created At'),
@@ -163,21 +171,6 @@ class Category extends \yii\db\ActiveRecord implements ViewableInterface, Search
                 'class' => VersionBehavior::className(),
                 'attributes' => ['title', 'alias', 'preview_text', 'detail_text', 'metakey', 'metadesc']
             ],
-            [
-                'class' => UploadBehavior::className(),
-                'attributes' => [
-                    'detail_image'=>[
-                        'fileName' => '{id}-full.#extension#'
-                    ],
-                    'preview_image'=>[
-                        'fileName' => '{id}-thumb.#extension#',
-                        'fileProcessor' => ThumbnailProcessor::className()
-                    ]
-                ],
-                'options' => [
-                    'savePath' => 'upload/categories'
-                ]
-            ]
         ];
     }
 
@@ -333,13 +326,6 @@ class Category extends \yii\db\ActiveRecord implements ViewableInterface, Search
     {
         parent::afterSave($insert, $changedAttributes);
 
-        // устанавливаем translation_id по умолчанию
-//        if ($insert && $this->translation_id === null) {
-//            $this->updateAttributes([
-//                'translation_id' => $this->id
-//            ]);
-//        }
-
         // нормализуем пути подэлементов для текущего элемента при его перемещении, либо изменении псевдонима
         if (array_key_exists('parent_id', $changedAttributes) || array_key_exists('alias', $changedAttributes)) {
             $this->refresh();
@@ -349,6 +335,46 @@ class Category extends \yii\db\ActiveRecord implements ViewableInterface, Search
         // ранжируем элементы если нужно
         if (array_key_exists('ordering', $changedAttributes)) {
             $this->ordering ? $this->parent->reorderNode('ordering') : $this->parent->reorderNode('lft');
+        }
+
+        // удаление загруженного превью изображения
+        if ($this->scenario == self::SCENARIO_DEFAULT && $this->preview_image && !isset($this->previewImageUploaded)) {
+            @unlink(Yii::getAlias('@webroot' . $this->preview_image));
+            $this->preview_image = null;
+            $this->updateAttributes(['preview_image']);
+        }
+
+        // обработка превью изображения
+        if ($previewImageInstance = UploadedFile::getInstance($this, 'previewImage')) {
+            $imageUrl = "/upload/posts/preview-{$this->id}.{$previewImageInstance->extension}";
+
+            $fullFilePath = Yii::getAlias('@webroot' . $imageUrl);
+            if (!$previewImageInstance->saveAs($fullFilePath, false)) {
+                throw new Exception('Не удалось сохранить изображние ' . $fullFilePath . '. Ошибка: ' . $previewImageInstance->error);
+            }
+
+            $this->preview_image = $imageUrl;
+            $this->updateAttributes(['preview_image']);
+        }
+
+        // удаление загруженного детального изображения
+        if ($this->scenario == self::SCENARIO_DEFAULT && $this->detail_image && !isset($this->detailImageUploaded)) {
+            @unlink(Yii::getAlias('@webroot' . $this->detail_image));
+            $this->detail_image = null;
+            $this->updateAttributes(['detail_image']);
+        }
+
+        // обработка детального изображения
+        if ($detailImageInstance = UploadedFile::getInstance($this, 'detailImage')) {
+            $imageUrl = "/upload/posts/detail-{$this->id}.{$detailImageInstance->extension}";
+
+            $fullFilePath = Yii::getAlias('@webroot' . $imageUrl);
+            if (!$detailImageInstance->saveAs($fullFilePath, false)) {
+                throw new Exception('Не удалось сохранить изображние ' . $fullFilePath . '. Ошибка: ' . $detailImageInstance->error);
+            }
+
+            $this->detail_image = $imageUrl;
+            $this->updateAttributes(['detail_image']);
         }
     }
 

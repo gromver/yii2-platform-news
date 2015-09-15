@@ -156,16 +156,18 @@ JS;
                 'attribute' => 'detail_text'
             ]) ?>
 
-            <?= $form->field($model, 'detail_image')->widget(\kartik\file\FileInput::classname(), [
-                'options' => ['accept' => 'image/*'],
+            <?= $form->field($model, 'detailImage')->widget(\kartik\file\FileInput::className(), [
+                'options'=>[
+                    'multiple' => false,
+                    'accept' => 'image/*',
+                ],
                 'pluginOptions' => [
-                    'initialPreview' => $model->getFileUrl('detail_image') ? [Html::img($model->getFileUrl('detail_image'), ['class' => 'file-preview-image'])] : [],
-                    'initialPreviewConfig' => [[
-                        'caption' => $model->getFileUrl('detail_image'),
-                        'url' => \yii\helpers\Url::to(['delete-file', 'pk' => $model->id, 'attribute' => 'detail_image']),
-                    ]],
+                    'language' => substr(Yii::$app->language, 0 ,2),
+                    'showRemove' => true,
                     'showUpload' => false,
-                    'showRemove' => false,
+                    'initialPreview' => $model->detail_image ? [
+                        Html::img($model->detail_image, ['class'=>'file-preview-image']) . Html::activeHiddenInput($model, 'detailImageUploaded', ['value' => $model->detail_image]),
+                    ] : false,
                 ]
             ]) ?>
         </div>
@@ -173,16 +175,18 @@ JS;
         <div id="advanced-options" class="tab-pane">
             <?= $form->field($model, 'preview_text')->textarea(['rows' => 10]) ?>
 
-            <?= $form->field($model, 'preview_image')->widget(\kartik\file\FileInput::classname(), [
-                'options' => ['accept' => 'image/*'],
+            <?= $form->field($model, 'previewImage')->widget(\kartik\file\FileInput::className(), [
+                'options'=>[
+                    'multiple' => false,
+                    'accept' => 'image/*',
+                ],
                 'pluginOptions' => [
-                    'initialPreview' => $model->getFileUrl('preview_image') ? [Html::img($model->getFileUrl('preview_image'), ['class' => 'file-preview-image'])] : [],
-                    'initialPreviewConfig' => [[
-                        'caption' => $model->getFileUrl('preview_image'),
-                        'url' => \yii\helpers\Url::to(['delete-file', 'pk' => $model->id, 'attribute' => 'preview_image']),
-                    ]],
+                    'language' => substr(Yii::$app->language, 0 ,2),
+                    'showRemove' => true,
                     'showUpload' => false,
-                    'showRemove' => false,
+                    'initialPreview' => $model->preview_image ? [
+                        Html::img($model->preview_image, ['class'=>'file-preview-image']) . Html::activeHiddenInput($model, 'previewImageUploaded', ['value' => $model->preview_image]),
+                    ] : false,
                 ]
             ]) ?>
         </div>
