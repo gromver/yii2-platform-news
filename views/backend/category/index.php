@@ -8,20 +8,14 @@ use kartik\grid\GridView;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = Yii::t('gromver.platform', 'Категории');
-$this->params['breadcrumbs'][] = $this->title;
-?>
+$this->params['breadcrumbs'][] = $this->title; ?>
+
 <div class="category-index">
 
     <div class="page-header">
         <h1><?= Html::encode($this->title) ?></h1>
     </div>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
-
-    <?php /*<p>
-        <?= Html::a(Yii::t('gromver.platform', 'Create {modelClass}', [
-    'modelClass' => 'Category',
-]), ['create'], ['class' => 'btn btn-success']) ?>
-    </p>*/?>
 
     <?= GridView::widget([
         'id' => 'table-grid',

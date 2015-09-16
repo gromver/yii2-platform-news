@@ -11,7 +11,7 @@ use yii\helpers\Html;
 
 echo '<h3>' . Html::a(Html::encode($model->title), $model->getFrontendViewLink()) . '</h3>';
 
-if($model->preview_image) echo Html::img($model->getFileUrl('preview_image'), [
+if($model->preview_image) echo Html::img($model->preview_image, [
     'class' => 'pull-left',
     'style' => 'max-width: 200px; margin-right: 15px;'
 ]);

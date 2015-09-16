@@ -16,7 +16,7 @@ $urlManager = Yii::$app->urlManager; ?>
 <h4 class="article-title<?= $model->postViewed ? ' viewed' : (Yii::$app->user->isGuest ? '' : ' new') ?>">
     <?= Html::a(Html::encode($model->title), $model->getFrontendViewLink()) ?>
 </h4>
-<?php if($model->preview_image) echo Html::img($model->getFileUrl('preview_image'), [
+<?php if($model->preview_image) echo Html::img($model->preview_image, [
     'class' => 'pull-left',
     'style' => 'max-width: 200px; margin-right: 15px;'
 ]); ?>

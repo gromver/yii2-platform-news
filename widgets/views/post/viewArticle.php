@@ -12,7 +12,7 @@ use yii\helpers\Html;
     <?= Html::encode($model->title) ?>
 </h1>'
 
-<?php if($model->detail_image) echo Html::img($model->getFileUrl('detail_image'), [
+<?php if($model->detail_image) echo Html::img($model->detail_image, [
     'class' => 'text-block img-responsive',
 ]); ?>
 <div class="article-detail">

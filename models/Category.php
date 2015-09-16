@@ -17,12 +17,14 @@ use gromver\platform\core\behaviors\VersionBehavior;
 use gromver\platform\core\interfaces\model\SearchableInterface;
 use gromver\platform\core\interfaces\model\ViewableInterface;
 use gromver\platform\core\modules\user\models\User;
+use Imagine\Image\ManipulatorInterface;
 use Yii;
 use yii\base\Exception;
 use yii\behaviors\BlameableBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
+use yii\imagine\Image;
 use yii\web\UploadedFile;
 
 /**
@@ -346,12 +348,20 @@ class Category extends \yii\db\ActiveRecord implements ViewableInterface, Search
 
         // обработка превью изображения
         if ($previewImageInstance = UploadedFile::getInstance($this, 'previewImage')) {
-            $imageUrl = "/upload/posts/preview-{$this->id}.{$previewImageInstance->extension}";
+            $imageUrl = "/upload/categories/preview-{$this->id}.{$previewImageInstance->extension}";
 
             $fullFilePath = Yii::getAlias('@webroot' . $imageUrl);
-            if (!$previewImageInstance->saveAs($fullFilePath, false)) {
-                throw new Exception('Не удалось сохранить изображние ' . $fullFilePath . '. Ошибка: ' . $previewImageInstance->error);
+            if (Yii::$app->paramsManager->news->category['previewResize'] && ($width = (int)Yii::$app->paramsManager->news->category['previewWidth']) && ($height = (int)Yii::$app->paramsManager->news->category['previewHeight'])) {
+                // сжатие изображения под размер указанный в параметрах модуля
+                if (!Image::thumbnail($previewImageInstance->tempName, $width, $height, ManipulatorInterface::THUMBNAIL_INSET)->save($fullFilePath)) {
+                    throw new Exception('Не удалось сохранить превью изображение ' . $fullFilePath);
+                }
+            } elseif (!$previewImageInstance->saveAs($fullFilePath, false)) {
+                throw new Exception('Не удалось сохранить изображение ' . $fullFilePath . '. Ошибка: ' . $previewImageInstance->error);
             }
+//            if (!$previewImageInstance->saveAs($fullFilePath, false)) {
+//                throw new Exception('Не удалось сохранить изображение ' . $fullFilePath . '. Ошибка: ' . $previewImageInstance->error);
+//            }
 
             $this->preview_image = $imageUrl;
             $this->updateAttributes(['preview_image']);
@@ -366,11 +376,11 @@ class Category extends \yii\db\ActiveRecord implements ViewableInterface, Search
 
         // обработка детального изображения
         if ($detailImageInstance = UploadedFile::getInstance($this, 'detailImage')) {
-            $imageUrl = "/upload/posts/detail-{$this->id}.{$detailImageInstance->extension}";
+            $imageUrl = "/upload/categories/detail-{$this->id}.{$detailImageInstance->extension}";
 
             $fullFilePath = Yii::getAlias('@webroot' . $imageUrl);
             if (!$detailImageInstance->saveAs($fullFilePath, false)) {
-                throw new Exception('Не удалось сохранить изображние ' . $fullFilePath . '. Ошибка: ' . $detailImageInstance->error);
+                throw new Exception('Не удалось сохранить изображение ' . $fullFilePath . '. Ошибка: ' . $detailImageInstance->error);
             }
 
             $this->detail_image = $imageUrl;

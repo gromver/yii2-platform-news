@@ -12,10 +12,12 @@ namespace gromver\platform\news;
 
 use gromver\modulequery\ModuleEventsInterface;
 use gromver\platform\core\components\MenuUrlRule;
+use gromver\platform\core\components\ParamsManager;
 use gromver\platform\core\modules\main\widgets\Desktop;
 use gromver\platform\core\modules\menu\widgets\MenuItemRoutes;
 use gromver\platform\news\components\MenuRouterNews;
 use gromver\platform\news\models\Category;
+use gromver\platform\news\models\NewsParams;
 use gromver\platform\news\models\Post;
 use gromver\platform\core\modules\search\modules\elastic\Module as ElasticModule;
 use gromver\platform\core\modules\search\modules\elastic\widgets\SearchResultsFrontend as ElasticSearchResults;
@@ -32,6 +34,24 @@ class Module extends \yii\base\Module implements ModuleEventsInterface
     public $controllerNamespace = 'gromver\platform\news\controllers';
     public $defaultRoute = 'backend/post';
     public $rssPageSize = 50;
+
+    /**
+     * @inheritdoc
+     */
+    public function events()
+    {
+        return [
+            Desktop::EVENT_FETCH_ITEMS => 'addDesktopItem',
+            ParamsManager::EVENT_FETCH_MODULE_PARAMS => 'addParams',
+            MenuItemRoutes::EVENT_FETCH_ITEMS => 'addMenuItemRoutes',
+            MenuUrlRule::EVENT_FETCH_MODULE_ROUTERS => 'addMenuRouter',
+            ElasticModule::EVENT_BEFORE_CREATE_INDEX . Post::className() => [Post::className(), 'elasticBeforeCreateIndex'],
+            ElasticSearchResults::EVENT_BEFORE_SEARCH . Post::className()  => [Post::className(), 'elasticBeforeFrontendSearch'],
+            ElasticSearchResults::EVENT_BEFORE_SEARCH . Category::className()  => [Category::className(), 'elasticBeforeFrontendSearch'],
+            SqlSearchResults::EVENT_BEFORE_SEARCH . Post::className() => [Post::className(), 'sqlBeforeFrontendSearch'],
+            SqlSearchResults::EVENT_BEFORE_SEARCH . Category::className() => [Category::className(), 'sqlBeforeFrontendSearch'],
+        ];
+    }
 
     /**
      * @param $event \gromver\platform\core\modules\main\widgets\events\DesktopEvent
@@ -71,19 +91,10 @@ class Module extends \yii\base\Module implements ModuleEventsInterface
     }
 
     /**
-     * @inheritdoc
+     * @param $event \gromver\platform\core\components\events\FetchParamsEvent
      */
-    public function events()
+    public function addParams($event)
     {
-        return [
-            Desktop::EVENT_FETCH_ITEMS => 'addDesktopItem',
-            MenuItemRoutes::EVENT_FETCH_ITEMS => 'addMenuItemRoutes',
-            MenuUrlRule::EVENT_FETCH_MODULE_ROUTERS => 'addMenuRouter',
-            ElasticModule::EVENT_BEFORE_CREATE_INDEX . Post::className() => [Post::className(), 'elasticBeforeCreateIndex'],
-            ElasticSearchResults::EVENT_BEFORE_SEARCH . Post::className()  => [Post::className(), 'elasticBeforeFrontendSearch'],
-            ElasticSearchResults::EVENT_BEFORE_SEARCH . Category::className()  => [Category::className(), 'elasticBeforeFrontendSearch'],
-            SqlSearchResults::EVENT_BEFORE_SEARCH . Post::className() => [Post::className(), 'sqlBeforeFrontendSearch'],
-            SqlSearchResults::EVENT_BEFORE_SEARCH . Category::className() => [Category::className(), 'sqlBeforeFrontendSearch'],
-        ];
+        $event->items[] = NewsParams::className();
     }
 }

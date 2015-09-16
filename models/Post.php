@@ -16,12 +16,14 @@ use gromver\platform\core\behaviors\VersionBehavior;
 use gromver\platform\core\interfaces\model\SearchableInterface;
 use gromver\platform\core\interfaces\model\ViewableInterface;
 use gromver\platform\core\modules\user\models\User;
+use Imagine\Image\ManipulatorInterface;
 use Yii;
 use yii\base\Exception;
 use yii\behaviors\BlameableBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
+use yii\imagine\Image;
 use yii\web\UploadedFile;
 
 /**
@@ -180,8 +182,13 @@ class Post extends \yii\db\ActiveRecord implements ViewableInterface, Searchable
             $imageUrl = "/upload/posts/preview-{$this->id}.{$previewImageInstance->extension}";
 
             $fullFilePath = Yii::getAlias('@webroot' . $imageUrl);
-            if (!$previewImageInstance->saveAs($fullFilePath, false)) {
-                throw new Exception('Не удалось сохранить изображние ' . $fullFilePath . '. Ошибка: ' . $previewImageInstance->error);
+            if (Yii::$app->paramsManager->news->post['previewResize'] && ($width = (int)Yii::$app->paramsManager->news->post['previewWidth']) && ($height = (int)Yii::$app->paramsManager->news->post['previewHeight'])) {
+                // сжатие изображения под размер указанный в параметрах модуля
+                if (!Image::thumbnail($previewImageInstance->tempName, $width, $height, ManipulatorInterface::THUMBNAIL_INSET)->save($fullFilePath)) {
+                    throw new Exception('Не удалось сохранить превью изображение ' . $fullFilePath);
+                }
+            } elseif (!$previewImageInstance->saveAs($fullFilePath, false)) {
+                throw new Exception('Не удалось сохранить изображение ' . $fullFilePath . '. Ошибка: ' . $previewImageInstance->error);
             }
 
             $this->preview_image = $imageUrl;
@@ -201,7 +208,7 @@ class Post extends \yii\db\ActiveRecord implements ViewableInterface, Searchable
 
             $fullFilePath = Yii::getAlias('@webroot' . $imageUrl);
             if (!$detailImageInstance->saveAs($fullFilePath, false)) {
-                throw new Exception('Не удалось сохранить изображние ' . $fullFilePath . '. Ошибка: ' . $detailImageInstance->error);
+                throw new Exception('Не удалось сохранить изображение ' . $fullFilePath . '. Ошибка: ' . $detailImageInstance->error);
             }
 
             $this->detail_image = $imageUrl;

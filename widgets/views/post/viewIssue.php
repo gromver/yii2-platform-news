@@ -20,7 +20,7 @@ use yii\helpers\Html;
 </div>
 
 <?php if($model->detail_image) {
-    echo Html::img($model->getFileUrl('detail_image'), [
+    echo Html::img($model->detail_image, [
         'class' => 'text-block img-responsive',
     ]);
 } ?>
