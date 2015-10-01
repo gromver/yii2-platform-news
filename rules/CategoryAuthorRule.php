@@ -1,9 +1,9 @@
 <?php
 /**
- * @link https://github.com/gromver/yii2-platform-basic.git#readme
+ * @link https://github.com/gromver/yii2-platform-news.git#readme
  * @copyright Copyright (c) Gayazov Roman, 2014
- * @license https://github.com/gromver/yii2-platform-basic/blob/master/LICENSE
- * @package yii2-platform-basic
+ * @license https://github.com/gromver/yii2-platform-news/blob/master/LICENSE
+ * @package yii2-platform-news
  * @version 1.0.0
  */
 
@@ -15,7 +15,7 @@ use Yii;
 
 /**
  * Class PostAuthorRule
- * @package yii2-platform-basic
+ * @package yii2-platform-news
  * @author Gayazov Roman <gromver5@gmail.com>
  */
 class CategoryAuthorRule extends \yii\rbac\Rule

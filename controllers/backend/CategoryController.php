@@ -1,9 +1,9 @@
 <?php
 /**
- * @link https://github.com/gromver/yii2-platform-basic.git#readme
+ * @link https://github.com/gromver/yii2-platform-news.git#readme
  * @copyright Copyright (c) Gayazov Roman, 2014
- * @license https://github.com/gromver/yii2-platform-basic/blob/master/LICENSE
- * @package yii2-platform-basic
+ * @license https://github.com/gromver/yii2-platform-news/blob/master/LICENSE
+ * @package yii2-platform-news
  * @version 1.0.0
  */
 
@@ -26,7 +26,7 @@ use yii\web\Response;
 
 /**
  * Class CategoryController implements the CRUD actions for Category model.
- * @package yii2-platform-basic
+ * @package yii2-platform-news
  * @author Gayazov Roman <gromver5@gmail.com>
  */
 class CategoryController extends BackendController
