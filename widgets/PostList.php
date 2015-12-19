@@ -27,7 +27,7 @@ class PostList extends Widget
      * Category or CategoryId or CategoryId:CategoryPath
      * @var Category|string
      * @field modal
-     * @url /news/backend/post/select
+     * @url /news/backend/category/select
      * @translation gromver.platform
      */
     public $category;

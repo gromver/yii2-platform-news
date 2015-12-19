@@ -26,7 +26,7 @@ class PostDay extends Widget
     /**
      * @var Category|string
      * @field modal
-     * @url /frontend/default/select-category
+     * @url /news/backend/category/select
      * @translation gromver.platform
      */
     public $category;
