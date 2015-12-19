@@ -10,7 +10,7 @@ use yii\helpers\Html;
 
 <h1 class="page-title title-article">
     <?= Html::encode($model->title) ?>
-</h1>'
+</h1>
 
 <?php if($model->detail_image) echo Html::img($model->detail_image, [
     'class' => 'text-block img-responsive',
